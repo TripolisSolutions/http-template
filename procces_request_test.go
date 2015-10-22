@@ -59,7 +59,7 @@ func TestProcessingRequest(t *testing.T) {
 				Host: {{.host}}
 				User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_6_8) AppleWebKit/534.57.2 (KHTML, like Gecko) Version/5.1.7`
 
-	str, err := ProcessRequest(httpText, mergeValues, nil)
+	str, err := ProcessRequest(httpText, mergeValues, nil, nil)
 	assert.Nil(t, err, "Error object must be nil")
 	assert.Equal(t, str, "{\"jsonkey\":\"jsonvalue\"}\n")
 }
@@ -118,11 +118,11 @@ func TestGetBasePath(t *testing.T) {
 	assert.Equal(t, result, "www.nu.nl/", "Test if trailing / is not added")
 }
 
-func dummyServer(code int, body string) *httptest.Server {
-	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(code)
-		w.Header().Set("Content-Type", "application/json")
-		fmt.Fprintln(w, body)
-	}))
-	return server
+//Test helper methods
+func HttpTemplateText() string {
+	dat, err := ioutil.ReadFile("./test_request.http")
+	if err != nil {
+		fmt.Println("error")
+	}
+	return string(dat)
 }
