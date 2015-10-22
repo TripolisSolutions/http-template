@@ -124,16 +124,7 @@ func ProcessRequest(httpText string, mergeValues map[string]string, options map[
 	requestOptions := GetOptions(options)
 	//merge variables in path
 	if hasMergeVariables(httpText) {
-		tmpl, err := template.New("request").Parse(httpText)
-		if err != nil {
-			return "", errors.New("Error parsing http template")
-		}
-		stringWriter := new(bytes.Buffer)
-		err = tmpl.Execute(stringWriter, mergeValues)
-		if err != nil {
-			return "", errors.New("Error merging variables in http template")
-		}
-		httpText, err = merge(httpText, mergeValues)
+		httpText, _ = merge(httpText, mergeValues)
 	}
 
 	var method, err = extractRequestMethod(httpText)

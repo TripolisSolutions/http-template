@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bytes"
 	"fmt"
 	"github.com/stretchr/testify/assert"
 	"io/ioutil"
@@ -10,22 +9,6 @@ import (
 	"net/url"
 	"testing"
 )
-
-type testTransport struct{}
-
-func (t testTransport) RoundTrip(request *http.Request) (*http.Response, error) {
-	fmt.Println("REACHING RESPONSE")
-	resp := new(http.Response)
-	resp.Status = "200 OK"
-	resp.StatusCode = 200
-	resp.Proto = "HTTP/1.0"
-	resp.ProtoMajor = 1
-	resp.ProtoMinor = 0
-	resp.Body = ioutil.NopCloser(bytes.NewBufferString("{}"))
-	resp.ContentLength = int64(len("{}"))
-	resp.Request = request
-	return resp, nil
-}
 
 // Test server , which overrides http.DefaultClient
 func testServer(code int, body string) *httptest.Server {
