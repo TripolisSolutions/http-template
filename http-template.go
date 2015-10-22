@@ -102,11 +102,28 @@ func extractPath(httpText string) (string, error) {
 	return matches[2], nil
 }
 
+func hasMergeVariables(httpText string) bool {
+	matched, _ := regexp.MatchString("{{.+}}", httpText)
+	return matched
+}
+
+func merge(httpText string, mergeValues map[string]string) (string, error) {
+	tmpl, err := template.New("request").Parse(httpText)
+	if err != nil {
+		return "", errors.New("Error parsing http template")
+	}
+	stringWriter := new(bytes.Buffer)
+	err = tmpl.Execute(stringWriter, mergeValues)
+	if err != nil {
+		return "", errors.New("Error merging variables in http template")
+	}
+	return stringWriter.String(), nil
+}
+
 func ProcessRequest(httpText string, mergeValues map[string]string, options map[string]string, callback RequestCallback) (string, error) {
 	requestOptions := GetOptions(options)
 	//merge variables in path
-	matched, _ := regexp.MatchString("{{.+}}", httpText)
-	if matched {
+	if hasMergeVariables(httpText) {
 		tmpl, err := template.New("request").Parse(httpText)
 		if err != nil {
 			return "", errors.New("Error parsing http template")
@@ -116,7 +133,7 @@ func ProcessRequest(httpText string, mergeValues map[string]string, options map[
 		if err != nil {
 			return "", errors.New("Error merging variables in http template")
 		}
-		httpText = stringWriter.String()
+		httpText, err = merge(httpText, mergeValues)
 	}
 
 	var method, err = extractRequestMethod(httpText)

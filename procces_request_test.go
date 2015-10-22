@@ -27,6 +27,7 @@ func (t testTransport) RoundTrip(request *http.Request) (*http.Response, error) 
 	return resp, nil
 }
 
+// Test server , which overrides http.DefaultClient
 func testServer(code int, body string) *httptest.Server {
 
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -43,6 +44,21 @@ func testServer(code int, body string) *httptest.Server {
 
 	http.DefaultClient = httpClient
 	return server
+}
+
+func TestHasMergeVariables(t *testing.T) {
+	testString := "I have a {{mergevariable}}"
+	assert.True(t, hasMergeVariables(testString), "Expected to have merge variables")
+
+	testString = "I don't have a mergevariables"
+	assert.False(t, hasMergeVariables(testString), "Expected not to have merge variables")
+}
+
+func TestMerge(t *testing.T) {
+	mergeValues := map[string]string{"key": "value"}
+	testString := "I have a merge variable {{.key}}"
+	result, _ := merge(testString, mergeValues)
+	assert.Equal(t, "I have a merge variable value", result, "Expected variables to be merged")
 }
 
 func TestProcessingRequest(t *testing.T) {
