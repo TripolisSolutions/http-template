@@ -58,7 +58,7 @@ func TestProcessingRequest(t *testing.T) {
 				Host: {{.host}}
 				User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_6_8) AppleWebKit/534.57.2 (KHTML, like Gecko) Version/5.1.7`
 
-	str, err := ProcessRequest(httpText, mergeValues, nil, nil)
+	str, err := ProcessRequest(httpText, mergeValues, nil, nil, false)
 	assert.Nil(t, err, "Error object must be nil")
 	assert.Equal(t, str, "{\"jsonkey\":\"jsonvalue\"}\n")
 }
@@ -71,7 +71,7 @@ func TestExtractHeaders(t *testing.T) {
 	assert.NotNil(t, host, "Host cannot be nil")
 	assert.NotEqual(t, "", host, "Host cannot be empty")
 	assert.NotNil(t, headers, "Headers should not be nil")
-	assert.Equal(t, 2, len(headers), "Invalid header length")
+	assert.Equal(t, 1, len(headers), "Invalid header length")
 
 }
 

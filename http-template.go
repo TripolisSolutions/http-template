@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"net/http/httputil"
 	"path"
 	"regexp"
 	"strings"
@@ -69,8 +70,9 @@ func extractHeaders(httpText string) (string, string, map[string]string, bool) {
 			header := headerRegex.FindStringSubmatch(line)
 			if strings.ToLower(header[1]) == strings.ToLower("HOST") {
 				host = header[2]
+			} else {
+				headers[header[0]] = header[1]
 			}
-			headers[header[0]] = header[1]
 		} else {
 
 		}
@@ -120,7 +122,7 @@ func merge(httpText string, mergeValues map[string]string) (string, error) {
 	return stringWriter.String(), nil
 }
 
-func ProcessRequest(httpText string, mergeValues map[string]string, options map[string]string, callback RequestCallback) (string, error) {
+func ProcessRequest(httpText string, mergeValues map[string]string, options map[string]string, callback RequestCallback, debug bool) (string, error) {
 	requestOptions := GetOptions(options)
 	//merge variables in path
 	if hasMergeVariables(httpText) {
@@ -157,8 +159,30 @@ func ProcessRequest(httpText string, mergeValues map[string]string, options map[
 		return "", requestError
 	}
 	addHeadersToRequest(req, headers)
+	if debug {
+		dump, err := httputil.DumpRequestOut(req, true)
+		if err != nil {
+			fmt.Println("Error in request" + err.Error())
+		}
+		fmt.Println(" ************************* REQUEST ****************************")
+		fmt.Println(string(dump))
+	}
 
 	resp, err := client.Do(req)
+	if resp.StatusCode != 200 {
+		if debug {
+			dump, err := httputil.DumpResponse(resp, true)
+			if err != nil {
+				fmt.Println("Error in dumping response" + err.Error())
+			}
+			fmt.Println(" ************************* RESPONSE ****************************")
+			fmt.Println(string(dump))
+		} else {
+			defer resp.Body.Close()
+			contents, _ := ioutil.ReadAll(resp.Body)
+			return "", errors.New("Error in request statuscode " + string(resp.StatusCode) + " " + string(contents))
+		}
+	}
 	if err != nil {
 		fmt.Println(err)
 		return "", err
