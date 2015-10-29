@@ -1,0 +1,8 @@
+POST /test_post.php?param1=xxxx HTTP/1.1
+Host: example.com
+User-Agent: Mozilla/5.0
+Connection: keep-alive
+Content-Type: application/x-www-form-urlencoded
+Content-Length: 11
+
+name=myname

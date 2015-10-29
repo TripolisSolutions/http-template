@@ -1,7 +1,8 @@
-package main
+package httptemplate
 
 import (
 	"fmt"
+	"github.com/martijnschouwe/http-template"
 	"github.com/stretchr/testify/assert"
 	"io/ioutil"
 	"net/http"
@@ -58,7 +59,8 @@ func TestProcessingRequest(t *testing.T) {
 				Host: {{.host}}
 				User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_6_8) AppleWebKit/534.57.2 (KHTML, like Gecko) Version/5.1.7`
 
-	str, err := ProcessRequest(httpText, mergeValues, nil, nil, false)
+	str, err := ProcessRequest(httpText, mergeValues, nil, nil, true)
+
 	assert.Nil(t, err, "Error object must be nil")
 	assert.Equal(t, str, "{\"jsonkey\":\"jsonvalue\"}\n")
 }

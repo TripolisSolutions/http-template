@@ -1,9 +1,10 @@
-package main
+package httptemplate
 
 import (
 	"bytes"
 	"errors"
 	"fmt"
+	"github.com/TripolisSolutions/http-template/plugins"
 	"io/ioutil"
 	"net/http"
 	"net/http/httputil"
@@ -54,6 +55,28 @@ func getBasePath(basePath string) string {
 	return bp
 }
 
+func extractRequestParameters(httpText string) string {
+	r := regexp.MustCompile(`\?([^\s]+)`)
+	lines := strings.Split(httpText, "\n")
+	var matches = r.FindStringSubmatch(lines[0])
+	var parameters = ""
+	if len(matches) > 0 {
+		parameters = matches[1]
+	}
+
+	return parameters
+}
+
+func extractPostParameters(httpText string) string {
+	r := regexp.MustCompile(`\n\n+(.*)`)
+	var matches = r.FindStringSubmatch(httpText)
+	var parameters = ""
+	if len(matches) > 0 {
+		parameters = matches[1]
+	}
+	return parameters
+}
+
 func extractHeaders(httpText string) (string, string, map[string]string, bool) {
 	headers := map[string]string{}
 	host := ""
@@ -71,7 +94,7 @@ func extractHeaders(httpText string) (string, string, map[string]string, bool) {
 			if strings.ToLower(header[1]) == strings.ToLower("HOST") {
 				host = header[2]
 			} else {
-				headers[header[0]] = header[1]
+				headers[header[1]] = header[2]
 			}
 		} else {
 
@@ -97,6 +120,10 @@ func addHeadersToRequest(req *http.Request, headers map[string]string) {
 	}
 }
 
+func addOauth1AHeaderToRequest(req *http.Request, host string, requestParameters string, bodyParameters string, requestMethod string, options map[string]string) {
+	req.Header.Add("Authorization", plugins.SignHeaderForOauth1A(host, requestParameters, bodyParameters, requestMethod, options))
+}
+
 func extractPath(httpText string) (string, error) {
 	lines := strings.Split(httpText, "\n")
 	r := regexp.MustCompile(`^([A-Za-z]+)\s+(/[0-9/A-Za-z_n?=\-%&{{}}+\.]+)\s+HTTP.+$`)
@@ -110,6 +137,7 @@ func hasMergeVariables(httpText string) bool {
 }
 
 func merge(httpText string, mergeValues map[string]string) (string, error) {
+
 	tmpl, err := template.New("request").Parse(httpText)
 	if err != nil {
 		return "", errors.New("Error parsing http template")
@@ -159,6 +187,15 @@ func ProcessRequest(httpText string, mergeValues map[string]string, options map[
 		return "", requestError
 	}
 	addHeadersToRequest(req, headers)
+
+	requestParameters := extractRequestParameters(httpText)
+	bodyParameters := extractPostParameters(httpText)
+
+	_, ok := options["oauth1a_consumer_key"]
+	if ok {
+		addOauth1AHeaderToRequest(req, host+path, requestParameters, bodyParameters, method, options)
+	}
+
 	if debug {
 		dump, err := httputil.DumpRequestOut(req, true)
 		if err != nil {
@@ -184,7 +221,6 @@ func ProcessRequest(httpText string, mergeValues map[string]string, options map[
 		}
 	}
 	if err != nil {
-		fmt.Println(err)
 		return "", err
 	}
 	defer resp.Body.Close()
