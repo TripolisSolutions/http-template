@@ -2,7 +2,6 @@ package httptemplate
 
 import (
 	"fmt"
-	"github.com/martijnschouwe/http-template"
 	"github.com/stretchr/testify/assert"
 	"io/ioutil"
 	"net/http"

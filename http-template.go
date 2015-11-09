@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
-	"github.com/TripolisSolutions/http-template/plugins"
 	"io/ioutil"
 	"net/http"
 	"net/http/httputil"
@@ -121,7 +120,7 @@ func addHeadersToRequest(req *http.Request, headers map[string]string) {
 }
 
 func addOauth1AHeaderToRequest(req *http.Request, host string, requestParameters string, bodyParameters string, requestMethod string, options map[string]string) {
-	req.Header.Add("Authorization", plugins.SignHeaderForOauth1A(host, requestParameters, bodyParameters, requestMethod, options))
+	req.Header.Add("Authorization", SignHeaderForOauth1A(host, requestParameters, bodyParameters, requestMethod, options))
 }
 
 func extractPath(httpText string) (string, error) {

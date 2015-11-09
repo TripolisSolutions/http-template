@@ -1,3 +1,3 @@
-GET /1.1/statuses/mentions_timeline.json HTTP/1.1
+GET /1.1/statuses/retweets/{{.post_id}}}.json HTTP/1.1
 Host: api.twitter.com
 Accept: */*;q=0.8
