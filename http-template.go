@@ -103,7 +103,7 @@ func extractHeaders(httpText string) (string, string, map[string]string, bool) {
 }
 
 func extractRequestMethod(httpText string) (string, error) {
-	r := regexp.MustCompile(`^([A-Za-z]+)\s+(/[0-9/A-Za-z_n?=\-%&{{}}+\.]+)\s+HTTP.+$`)
+	r := regexp.MustCompile(`^([A-Za-z]+)\s+(/[0-9/A-Za-z_n?=\-%&{{}}+\.]+)\s+HTTP`)
 	lines := strings.Split(httpText, "\n")
 	var matches = r.FindStringSubmatch(lines[0])
 	var method = matches[1]
